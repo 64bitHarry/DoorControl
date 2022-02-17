@@ -114,7 +114,6 @@
 				5B30F77C2C51B30EA83BD21E /* Pods-DoorControl-DoorControlTests.debug.xcconfig */,
 				7595BB82146DBE3A199C0710 /* Pods-DoorControl-DoorControlTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -485,6 +484,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63B4ZAT748;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DoorControl/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -511,6 +511,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63B4ZAT748;
 				INFOPLIST_FILE = DoorControl/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
