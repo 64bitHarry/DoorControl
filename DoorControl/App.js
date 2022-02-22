@@ -1,10 +1,7 @@
 /**
   * @author Harold-Martin Michling
-  * login screen for the Tachofresh backend
-  * posable to enter the user credentials:
-  * company number
-  * user name
-  * and submit it to Tachofresh
+  * ble remote controll for a garage door
+  * the peripheral is arduino iot 33
   */
 
 import React, { Component, PropTypes } from 'react';
@@ -12,13 +9,13 @@ import {Text, TextInput, View, Button, Alert, Image,
 	    Navigator, TouchableHighlight, StyleSheet,
 	    Keyboard, Dimensions, ActivityIndicator,
 	    AsyncStorage, Platform, KeyboardAvoidingView,
-	    Modal, Pressable, NativeModules, NativeEventEmitter,
+	    Modal, Pressable,
+	    ScrollView,
        } from 'react-native';
+import ListItem from './utils/ListItem';
 
-import BleManager from 'react-native-ble-manager';
-const BleManagerModule = NativeModules.BleManager;
-const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
-
+import BleService from './utils/BleService';
+const bleService = BleService.instance;
 
 //screen dimensions to dynimic scale of the screen
 const WIDTH = Dimensions.get('window').width;
@@ -30,74 +27,95 @@ export default class App extends Component {
 
 	constructor(){
 		super();
+		this.deviceList={};
 		this.state = {
-			isLoading: false,
 			modalVisible: false,
+			peripheral:null,//the selected device
+			renderList:[],
 		};
+	}//END constructor
 
-		BleManager.start({ showAlert: false }).then(() => {
-          // Success code
-          console.log("Module initialized");
+    createDeviceList = (peripheral) => {
+
+        //this.deviceList[(peripheral.name)]=(
+        //    <View key={peripheral.name} style={{ flex:1, justifyContent:'space-between',width:WIDTH*0.9}}>
+        //        <Text>{peripheral.name}</Text>
+        //    </View>
+        //);
+        //var list = [];
+        //    Object.keys(this.deviceList).forEach(value=>{
+        //        list.push(this.deviceList[value]);
+        //    });
+        //this.setState({renderList:list});
+    }//END handle
+
+
+    /**
+     * static method to render the scroll view elements
+     * TODO create the list on notify or update the list if new element is found
+     */
+    renderDeviceList = () => {
+    console.log('render list');
+        var tmp = [];
+        Object.keys(bleService.deviceList).forEach(value=>{
+            tmp.push(
+                <View key={bleService.deviceList[value].name} style={{ flex:1, justifyContent:'space-between',width:WIDTH*0.9}}>
+                    <ListItem name={bleService.deviceList[value].name} macAdress={bleService.deviceList[value].id} />
+                </View>
+            );
         });
-        bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
-	}
-
-  handleDiscoverPeripheral = (peripheral) => {
-    console.log('Got ble peripheral', peripheral);
-    if (!peripheral.name) {
-      peripheral.name = 'NO NAME';
+        this.setState({renderList:tmp});
     }
-    //peripherals.set(peripheral.id, peripheral);
-    //setList(Array.from(peripherals.values()));
-  }
-	openSettings=()=>{
-	    this.setState({modalVisible:true});
+
+
+    openSettings=()=>{
+        //console.log(bleService.deviceList)
+        this.renderDeviceList()
+        this.setState({modalVisible:true});
 	}
 
-	upButton=()=>{
+    /**
+     * write the up comand to the ble
+     */
+    upButton=()=>{
         Alert.alert("up");
-        BleManager.scan([], 5, true).then(() => {
-                  // Success code
-                  console.log("Scan started");
-                });
-	}
-
-	down=()=>{
-         Alert.alert("down");
     }
 
-//TODO style the modal view and add the possable settings
+    /**
+     * write the down comand to the ble
+     */
+	down=()=>{
+	    Alert.alert("down");
+    }
+
     renderModal(){
         return (
-        <View style={styles.centeredView}>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={this.state.modalVisible}
-                onRequestClose={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <View style={styles.centeredView}>
-                  <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Verbindungs Einstellungen</Text>
-                    <TextInput
-                        ref='FirstInput'
-                    	returnKeyType = {"next"}
-                    	placeholder={"192.168.35.101"}
-                    	autoCorrect={false}
-                    	onEndEditing  = {(event) => this.setState({customerNumber: event.nativeEvent.text})}
-                    />
-                    <Pressable
-                      style={[styles.button, styles.buttonClose]}
-                      onPress={() => this.setState({modalVisible: false})}
-                    >
-                      <Text style={styles.textStyle}>Anwenden!</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </Modal>
-        </View>
+            <View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.state.modalVisible}
+                    onRequestClose={() => {
+                      setModalVisible(!modalVisible);
+                    }}
+                >
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <Pressable
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={bleService.scan}
+                            >
+                                <Text style={styles.textStyle}>Bluetooth scan</Text>
+                            </Pressable>
+                        <ScrollView>
+                            <View>
+                                {this.state.renderList}
+                            </View>
+                        </ScrollView>
+                      </View>
+                    </View>
+                  </Modal>
+            </View>
         );
     }
 
@@ -220,12 +238,9 @@ const styles = StyleSheet.create({
         borderRadius:20
     },
     modalView: {
-        margin: 20,
+        margin: 5,
         backgroundColor: "white",
         borderRadius: 20,
-        padding: 35,
-        height: HEIGHT*0.4,
-        width: WIDTH*0.8,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -239,7 +254,8 @@ const styles = StyleSheet.create({
       button: {
         borderRadius: 20,
         padding: 10,
-        elevation: 2
+        elevation: 2,
+        marginBottom:10
       },
       buttonOpen: {
         backgroundColor: "#F194FF",
@@ -257,7 +273,6 @@ const styles = StyleSheet.create({
         textAlign: "center"
       },
       centeredView: {
-        flex: 1,
         justifyContent: "center",
         alignItems: "center",
         marginTop: 22,
