@@ -13,6 +13,7 @@ import {Text, TextInput, View, Button, Alert, Image,
 	    ScrollView,
        } from 'react-native';
 import ListItem from './utils/ListItem';
+import constants from './utils/Constants';
 
 import BleService from './utils/BleService';
 const bleService = BleService.instance;
@@ -28,11 +29,14 @@ export default class App extends Component {
 	constructor(){
 		super();
 		this.deviceList={};
+		this.componentId="app";
 		this.state = {
 			modalVisible: false,
 			peripheral:null,//the selected device
 			renderList:[],
 		};
+		console.log(this);
+		bleService.registerListener(this);//inform the app if a device is selected or a list is updated.
 	}//END constructor
 
     createDeviceList = (peripheral) => {
@@ -52,7 +56,7 @@ export default class App extends Component {
 
     /**
      * static method to render the scroll view elements
-     * TODO create the list on notify or update the list if new element is found
+     * TODO update the list on change
      */
     renderDeviceList = () => {
     console.log('render list');
@@ -72,6 +76,13 @@ export default class App extends Component {
         //console.log(bleService.deviceList)
         this.renderDeviceList()
         this.setState({modalVisible:true});
+	}
+
+	notify=(event)=>{
+	    console.log(event);
+	    if(event==constants.NOTIFY_EVENT){
+            this.setState({modalVisible:false});
+	    }
 	}
 
     /**
@@ -255,7 +266,8 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 10,
         elevation: 2,
-        marginBottom:10
+        marginBottom:10,
+        marginTop:10,
       },
       buttonOpen: {
         backgroundColor: "#F194FF",

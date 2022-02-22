@@ -16,6 +16,8 @@ import {
 import BleService from './BleService';
 const bleService = BleService.instance;
 
+import constants from './Constants';
+
 //screen dimensions to dynimic scale of the screen
 const WIDTH = Dimensions.get('window').width;
 const HEIGHT = Dimensions.get('window').height;
@@ -34,7 +36,8 @@ export default class ListItem extends Component {
     itemSelected = () => {
         if(this.props.touch !== undefined)return;
         console.log(this.props.name);
-        //TODO bleService.set(this.props.periphial)
+        bleService.setPeripheral(this.props.name)
+        bleService.notifyListener(constants.NOTIFY_EVENT);
     }
 
      render() {
@@ -46,7 +49,7 @@ export default class ListItem extends Component {
                         <Text style={styles.fontStyle}>{this.props.name}</Text>
                     </View>
                     <View style={{width:WIDTH*0.80,}}>
-                        <Text style={{styles.fontStylesmall}}>{this.props.macAdress}</Text>
+                        <Text style={styles.fontStylesmall}>{this.props.macAdress}</Text>
                     </View>
                 </View>
             </TouchableHighlight>

@@ -29,7 +29,8 @@ export default class BleService{
         this.appState = 'active';
         this.deviceList={};
         this.peripheral=null;
-        this.peripheralInfo=null
+        this.peripheralInfo=null;
+        this.listener = {};
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
         BleManager.start({ showAlert: false }).then(() => {
@@ -44,7 +45,7 @@ export default class BleService{
     handleDiscoverPeripheral = (peripheral) => {
         if(!peripheral.name)return;
         //console.log('Got ble peripheral', peripheral);
-        console.log(peripheral);
+        //console.log(peripheral);
         this.deviceList[peripheral.name]=peripheral;
     }
 
@@ -61,7 +62,7 @@ export default class BleService{
      * connact to the selectet peripheral
      */
     connact=()=>{
-        BleManager.connect(this.state.peripheral.id)
+        BleManager.connect(this.peripheral.id)
             .then(() => {
                 console.log("Connected");
             }).catch((error) => {
@@ -73,7 +74,7 @@ export default class BleService{
      * need to get the services and is need as a step to send and read data
      */
     retriveService=()=>{
-        BleManager.retrieveServices(this.state.peripheral.id).then(
+        BleManager.retrieveServices(this.peripheral.id).then(
             (peripheralInfo) => {
                 console.log("Peripheral info:", peripheralInfo);
                 this.peripheralInfo = peripheralInfo;
@@ -86,17 +87,17 @@ export default class BleService{
      * retrive service and start the Nofication to write and read data
      */
     retrieveServiceAndStartNotification=()=>{
-        BleManager.retrieveServices(this.state.peripheral.id).then((peripheralInfo) => {
+        BleManager.retrieveServices(this.peripheral.id).then((peripheralInfo) => {
             console.log(peripheralInfo);
-            var service = this.state.peripheral.advertising.serviceUUIDs[0];
+            var service = this.peripheral.advertising.serviceUUIDs[0];
             var characteristic = '2A57';
 
             console.log('try to send Data');
             setTimeout(() => {
-                BleManager.startNotification(this.state.peripheral.id, service, characteristic).then(() => {
+                BleManager.startNotification(this.peripheral.id, service, characteristic).then(() => {
                     console.log('Started notification on ' + peripheral.id);
                     setTimeout(() => {
-                        BleManager.writeWithoutResponse(this.state.peripheral.id, service, characteristic, [0x00]).then(() => {
+                        BleManager.writeWithoutResponse(this.peripheral.id, service, characteristic, [0x00]).then(() => {
                             console.log('write without Response');
                         });
                     }, 500);
@@ -111,16 +112,44 @@ export default class BleService{
 	 * send data to the device data is a byte array e.g. [0x00,0x01]
 	 */
     sendData=(data)=>{
-        console.log(this.state.peripheral.id);
-        console.log(this.state.peripheral.advertising.serviceUUIDs[0]);
+        console.log(this.peripheral.id);
+        console.log(this.peripheral.advertising.serviceUUIDs[0]);
         console.log('2A57');
     	console.log(data);
-        BleManager.write(this.state.peripheral.id,this.state.peripheral.advertising.serviceUUIDs[0],'2A57',data)
+        BleManager.write(this.peripheral.id,this.peripheral.advertising.serviceUUIDs[0],'2A57',data)
             .then(() => {
                 console.log("Writed: " + data);
             }).catch((error) => {
                 console.log(error);
             });
     	}
+
+
+    /**
+     * method to set the peripheral from outside
+     */
+    setPeripheral=(newDevice)=>{
+        this.peripheral=this.deviceList[newDevice];
+        this.connact();
+    }
+
+
+    //Listener to notify the app and other parts if I extend the app
+    removeListener(view){
+        delete this.listener[(view.props.componentId)];
+    }
+
+    registerListener(view){
+    console.log('+++++++');
+    console.log(view.componentId);
+        this.listener[view.componentId] = view;
+    }
+
+    //notify about the new messages
+    notifyListener(event, message){
+        Object.keys(this.listener).forEach(value=>{
+            this.listener[value].notify(event,message);
+        });
+    }
 
 }
