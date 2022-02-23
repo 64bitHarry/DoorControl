@@ -97,10 +97,6 @@ export default class App extends Component {
         bleService.sendData([0x01]);
     }
 
-    upStop=(){
-        bleService.sendData([0x00]);
-    }
-
     /**
      * write the down comand to the ble
      */
