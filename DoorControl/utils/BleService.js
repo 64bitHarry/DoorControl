@@ -13,6 +13,8 @@ import BleManager from 'react-native-ble-manager';
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
+import constants from './Constants';
+
 let instance = null;
 
 export default class BleService{
@@ -33,6 +35,7 @@ export default class BleService{
         this.listener = {};
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+        bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
         BleManager.start({ showAlert: false }).then(() => {
             console.log("Module initialized");
             this.scan();
@@ -47,6 +50,11 @@ export default class BleService{
         //console.log('Got ble peripheral', peripheral);
         //console.log(peripheral);
         this.deviceList[peripheral.name]=peripheral;
+    }
+
+    handleDisconnectedPeripheral = (data) =>{
+        console.log(data);
+        this.notifyListener(constants.CONNECTION_LOST);
     }
 
     /**
@@ -65,6 +73,8 @@ export default class BleService{
         BleManager.connect(this.peripheral.id)
             .then(() => {
                 console.log("Connected");
+                this.notifyListener(constants.CONNECTED);
+                this.retrieveServiceAndStartNotification();
             }).catch((error) => {
                 console.log(error);
             });
@@ -140,15 +150,13 @@ export default class BleService{
     }
 
     registerListener(view){
-    console.log('+++++++');
-    console.log(view.componentId);
         this.listener[view.componentId] = view;
     }
 
     //notify about the new messages
-    notifyListener(event, message){
+    notifyListener(event){
         Object.keys(this.listener).forEach(value=>{
-            this.listener[value].notify(event,message);
+            this.listener[value].notify(event);
         });
     }
 

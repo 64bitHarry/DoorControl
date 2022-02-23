@@ -1,4 +1,6 @@
 module.exports = {
 
     NOTIFY_EVENT:'event',
+    CONNECTED:'CONNECTED',
+    CONNECTION_LOST:'CONNECTION_LOST',
 }

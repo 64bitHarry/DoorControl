@@ -34,6 +34,7 @@ export default class App extends Component {
 			modalVisible: false,
 			peripheral:null,//the selected device
 			renderList:[],
+			connectionStatus:styles.ciclered,
 		};
 		console.log(this);
 		bleService.registerListener(this);//inform the app if a device is selected or a list is updated.
@@ -82,21 +83,38 @@ export default class App extends Component {
 	    console.log(event);
 	    if(event==constants.NOTIFY_EVENT){
             this.setState({modalVisible:false});
+	    }else if(event==constants.CONNECTED){
+	        this.setState({connectionStatus:styles.ciclegrren});
+	    }else if(event==constants.CONNECTION_LOST){
+	        this.setState({connectionStatus:styles.ciclered});
 	    }
 	}
 
     /**
      * write the up comand to the ble
      */
-    upButton=()=>{
-        Alert.alert("up");
+    upStart=()=>{
+        bleService.sendData([0x01]);
+    }
+
+    upStop=(){
+        bleService.sendData([0x00]);
     }
 
     /**
      * write the down comand to the ble
      */
-	down=()=>{
-	    Alert.alert("down");
+	downStart=()=>{
+	    bleService.sendData([0x02]);
+	    //console.log('start down');
+    }
+
+    /**
+     * send the 0x00 to stop the door
+     */
+    stop=()=>{
+        bleService.sendData([0x00]);
+        //console.log('stop down');
     }
 
     renderModal(){
@@ -136,12 +154,12 @@ export default class App extends Component {
         <View style={styles.mainView}>
             {this.renderModal()}
             <View style={styles.header}>
-                <View style={styles.ciclegrren}></View>
+                <View style={this.state.connectionStatus}></View>
                 <Text style={{fontSize: HEIGHT*0.05, marginLeft:15, marginTop:15}}>Verbunden</Text>
             </View>
             <View style={styles.body}>
                 <View>
-                    <TouchableHighlight underlayColor = {'rgba(0, 0, 0, 0.0)'} onPress={this.upButton}>
+                    <TouchableHighlight underlayColor = {'rgba(0, 0, 0, 0.0)'} onPressIn={this.upStart} onPressOut={this.stop} >
                         <View style={styles.buttonUp}>
                             <Image style={styles.arrow}
                                 source={require('./imgs/211614_down_b_arrow_icon.png')} />
@@ -150,7 +168,7 @@ export default class App extends Component {
                 </View>
 
                 <View>
-                    <TouchableHighlight underlayColor = {'rgba(0, 0, 0, 0.0)'} onPress={this.down}>
+                    <TouchableHighlight underlayColor = {'rgba(0, 0, 0, 0.0)'} onPressIn={this.downStart} onPressOut={this.stop}>
                         <View style={styles.buttondown}>
                             <Image style={styles.arrow2}
                                 source={require('./imgs/211614_down_b_arrow_icon.png')} />
