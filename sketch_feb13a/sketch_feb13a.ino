@@ -4,9 +4,6 @@
 #define PINUP 6
 #define PINDOWN 7
 #define POWERPIN 8
-long previousMillis = 0;
-int interval = 0;
-int ledState = LOW;
 
 
 
@@ -23,6 +20,8 @@ void setup() {
   pinMode(PINDOWN, OUTPUT);
   pinMode(POWERPIN, OUTPUT);
   pinMode(POWERPIN, INPUT);
+  digitalWrite(PINUP, HIGH);
+  digitalWrite(PINDOWN, HIGH);
   
 
   // begin initialization
@@ -62,29 +61,37 @@ void loop() {
       // if the remote device wrote to the characteristic,
       // use the value to control the LED:
       if (switchCharacteristic.written()) {
+      //TODO check pw
+      //if switchCharacteristic.value() == 'password' password true
+      //while password true
         Serial.print("read Value");
         Serial.print(switchCharacteristic.value());
         switch (switchCharacteristic.value()) {   // any value other than 0
           case 00:
             digitalWrite(LED_BUILTIN, LOW);
-            digitalWrite(PINUP, LOW);  
-            digitalWrite(PINDOWN, LOW);  
+            digitalWrite(PINUP, HIGH);
+            digitalWrite(PINDOWN, HIGH);
             break;
           case 01:
             digitalWrite(LED_BUILTIN, HIGH);            // will turn the LED on and reali 1 on
-            digitalWrite(PINUP, HIGH ); 
-            digitalWrite(PINDOWN, LOW);
+            digitalWrite(PINUP, LOW );
+            digitalWrite(PINDOWN, HIGH);
               
             break;
           case 02:
               digitalWrite(LED_BUILTIN, HIGH);         // will turn the LED on relai 2 on
-              digitalWrite(PINUP, LOW); 
-              digitalWrite(PINDOWN, HIGH); 
+              digitalWrite(PINUP, HIGH);
+              digitalWrite(PINDOWN, LOW);
+            break;
+            case 03:
+                digitalWrite(LED_BUILTIN, HIGH);
+                //TODO save ble password
+                //wait for new pw ( while pw not set) if switchCharacteristic.written()  save(switchCharacteristic.value());
             break;
           default:
             digitalWrite(LED_BUILTIN, LOW);          // will turn the LED off and the relai off
-            digitalWrite(PINUP, LOW);  
-            digitalWrite(PINDOWN, LOW);  
+            digitalWrite(PINUP, HIGH);
+            digitalWrite(PINDOWN, HIGH);
             break;
         }
       }
@@ -94,7 +101,7 @@ void loop() {
     Serial.print(F("Disconnected from central: "));
     Serial.println(central.address());
     digitalWrite(LED_BUILTIN, LOW);         // will turn the LED and the relai off
-    digitalWrite(PINUP, LOW);  
-    digitalWrite(PINDOWN, LOW);  
+    digitalWrite(PINUP, HIGH);
+    digitalWrite(PINDOWN, HIGH);
   }
 }
