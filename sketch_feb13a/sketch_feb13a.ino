@@ -22,7 +22,7 @@ void setup() {
   pinMode(POWERPIN, INPUT);
   digitalWrite(PINUP, HIGH);
   digitalWrite(PINDOWN, HIGH);
-  
+  BLE.setDeviceName("Sesam Öffne dich");
 
   // begin initialization
   if (!BLE.begin()) {

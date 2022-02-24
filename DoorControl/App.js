@@ -81,12 +81,16 @@ export default class App extends Component {
 
 	notify=(event)=>{
 	    console.log(event);
+	    //TODO change to switch statemant
 	    if(event==constants.NOTIFY_EVENT){
             this.setState({modalVisible:false});
 	    }else if(event==constants.CONNECTED){
 	        this.setState({connectionStatus:styles.ciclegrren});
 	    }else if(event==constants.CONNECTION_LOST){
 	        this.setState({connectionStatus:styles.ciclered});
+	    }else if(event==constants.DEVICEUPDATE){
+	        this.renderDeviceList();
+	        this.forceUpdate();
 	    }
 	}
 
@@ -113,6 +117,13 @@ export default class App extends Component {
         //console.log('stop down');
     }
 
+    /**
+     * close the modal view.
+     */
+    abbort=()=>{
+        this.setState({modalVisible:false});
+    }
+
     renderModal(){
         return (
             <View>
@@ -132,11 +143,17 @@ export default class App extends Component {
                             >
                                 <Text style={styles.textStyle}>Bluetooth scan</Text>
                             </Pressable>
-                        <ScrollView>
-                            <View>
-                                {this.state.renderList}
-                            </View>
-                        </ScrollView>
+                            <ScrollView>
+                                <View>
+                                    {this.state.renderList}
+                                </View>
+                            </ScrollView>
+                            <Pressable
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={this.abbort}
+                            >
+                                <Text style={styles.textStyle}>Abrechen</Text>
+                            </Pressable>
                       </View>
                     </View>
                   </Modal>

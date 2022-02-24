@@ -36,6 +36,7 @@ export default class BleService{
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
         bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
+        bleManagerEmitter.addListener('BleManagerStopScan', this.handleStopScan );
         BleManager.start({ showAlert: false }).then(() => {
             console.log("Module initialized");
             this.scan();
@@ -52,6 +53,16 @@ export default class BleService{
         this.deviceList[peripheral.name]=peripheral;
     }
 
+    /**
+     * action if the scan is finished
+     */
+    handleStopScan = () =>{
+        this.notifyListener(constants.DEVICEUPDATE);
+    }
+
+    /**
+     * action if the peripheral is disconected
+     */
     handleDisconnectedPeripheral = (data) =>{
         console.log(data);
         this.notifyListener(constants.CONNECTION_LOST);
