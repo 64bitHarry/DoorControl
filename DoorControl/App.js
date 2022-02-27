@@ -57,7 +57,7 @@ export default class App extends Component {
 
     /**
      * static method to render the scroll view elements
-     * TODO update the list on change
+     *
      */
     renderDeviceList = () => {
     console.log('render list');

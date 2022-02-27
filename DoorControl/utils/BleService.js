@@ -33,6 +33,7 @@ export default class BleService{
         this.peripheral=null;
         this.peripheralInfo=null;
         this.listener = {};
+        this.loadedVal = null;
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
         bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
@@ -41,6 +42,7 @@ export default class BleService{
             console.log("Module initialized");
             this.scan();
         });
+        this.loadPeripheral();
     }
 
     /**
@@ -50,6 +52,10 @@ export default class BleService{
         if(!peripheral.name)return;
         //console.log('Got ble peripheral', peripheral);
         //console.log(peripheral);
+        //TODO check on scenn if the saved device is found.
+        if(this. != null && peripheral.name == this.){
+
+        }
         this.deviceList[peripheral.name]=peripheral;
     }
 
@@ -72,6 +78,7 @@ export default class BleService{
      * do the ble scan all found items are in handleDiscoverPeripheral
      */
     scan=()=>{
+        this.deviceList = {};
         BleManager.scan([], 1, true).then(() => {
             console.log("Scan started");
         });
@@ -81,6 +88,7 @@ export default class BleService{
      * connact to the selectet peripheral
      */
     connact=()=>{
+        this.saveConnection();
         BleManager.connect(this.peripheral.id)
             .then(() => {
                 console.log("Connected");
@@ -89,6 +97,39 @@ export default class BleService{
             }).catch((error) => {
                 console.log(error);
             });
+    }
+
+    /**
+     * save the Pheripherial on connection.
+     */
+    saveConnection= async ()=>{
+        try {
+        console.log('save');
+            await AsyncStorage.setItem(
+              constants.PERIPHERALKEY,
+                JSON.stringify(this.peripheral)
+            );
+          } catch (error) {
+            // Error saving data
+          }
+    }
+
+    /**
+     * load a saved peripheral
+     */
+    loadPeripheral= async ()=>{
+    try {
+        const value = await AsyncStorage.getItem(constants.PERIPHERALKEY);
+        if (value !== null) {
+          // We have data!!
+          console.log('got value');
+          console.log(value);
+          var temp = JSON.parse(value);
+          this.loadedVal = temp;
+        }
+      } catch (error) {
+        // Error retrieving data
+      }
     }
 
     /**
