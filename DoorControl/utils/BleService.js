@@ -8,6 +8,7 @@ import {
     NativeEventEmitter,
 } from 'react-native';
 //import Toast from 'react-native-simple-toast';//may be erase because status is on main screen
+import Toast from 'react-native-simple-toast';
 
 import BleManager from 'react-native-ble-manager';
 const BleManagerModule = NativeModules.BleManager;
@@ -53,7 +54,6 @@ export default class BleService{
     handleDiscoverPeripheral = (peripheral) => {
         if(!peripheral.name)return;
         if(this.loadedVal.name != null && peripheral.name == this.loadedVal.name){
-            console.log('previous connection found');
             this.peripheral=peripheral;
             this.connact();
         }
@@ -71,7 +71,6 @@ export default class BleService{
      * action if the peripheral is disconected
      */
     handleDisconnectedPeripheral = (data) =>{
-        console.log(data);
         this.notifyListener(constants.CONNECTION_LOST);
     }
 
@@ -92,11 +91,10 @@ export default class BleService{
         this.saveConnection();
         BleManager.connect(this.peripheral.id)
             .then(() => {
-                console.log("Connected");
                 this.notifyListener(constants.CONNECTED);
                 this.retrieveServiceAndStartNotification();
             }).catch((error) => {
-                console.log(error);
+
             });
             this.connected = true;
     }
@@ -106,7 +104,6 @@ export default class BleService{
      */
     saveConnection= async ()=>{
         try {
-        console.log('save');
             await AsyncStorage.setItem(
               constants.PERIPHERALKEY,
                 JSON.stringify(this.peripheral)
@@ -123,14 +120,11 @@ export default class BleService{
     try {
         const value = await AsyncStorage.getItem(constants.PERIPHERALKEY);
         if (value !== null) {
-          // We have data!!
-          console.log('got value');
-          console.log(value);
           var temp = JSON.parse(value);
           this.loadedVal = temp;
         }
       } catch (error) {
-        // Error retrieving data
+
       }
     }
 
@@ -153,8 +147,17 @@ export default class BleService{
     retrieveServiceAndStartNotification=()=>{
         BleManager.retrieveServices(this.peripheral.id).then((peripheralInfo) => {
             console.log(peripheralInfo);
+            if(!this.peripheral.advertising.serviceUUIDs){//no service available
+                console.log('no service');
+
+                return;
+            }else if(!peripheralInfo.characteristics){//no charakteristik found
+                console.log('no service');
+                return;
+            }
+            this.peripheralInfo = peripheralInfo;
             var service = this.peripheral.advertising.serviceUUIDs[0];
-            var characteristic = '2A57';
+            var characteristic = peripheralInfo.characteristics[0].characteristic;
 
             console.log('try to send Data');
             setTimeout(() => {
@@ -176,11 +179,15 @@ export default class BleService{
 	 * send data to the device data is a byte array e.g. [0x00,0x01]
 	 */
     sendData=(data)=>{
-    //TODO check that the device provides a service
-        console.log(this.peripheral.id);
-        console.log(this.peripheral.advertising.serviceUUIDs[0]);
-        console.log('2A57');
-    	console.log(data);
+        if(!this.peripheral.advertising.serviceUUIDs){//no service available
+            console.log('no service');
+            Toast.show('device not supported');
+            return;
+        }else if(!this.peripheralInfo.characteristics){//no charakteristik found
+            console.log('no service');
+            Toast.show('device not supported');
+            return;
+        }
         BleManager.write(this.peripheral.id,this.peripheral.advertising.serviceUUIDs[0],'2A57',data)
             .then(() => {
                 console.log("Writed: " + data);

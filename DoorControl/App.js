@@ -36,7 +36,6 @@ export default class App extends Component {
 			renderList:[],
 			connectionStatus:styles.ciclered,
 		};
-		console.log(this);
 		bleService.registerListener(this);//inform the app if a device is selected or a list is updated.
 	}//END constructor
 
@@ -45,7 +44,6 @@ export default class App extends Component {
      *
      */
     renderDeviceList = () => {
-    console.log('render list');
         var tmp = [];
         Object.keys(bleService.deviceList).forEach(value=>{
             tmp.push(
