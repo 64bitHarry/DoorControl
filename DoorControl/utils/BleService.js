@@ -34,6 +34,7 @@ export default class BleService{
         this.peripheralInfo=null;
         this.listener = {};
         this.loadedVal = null;
+        this.connected = false;
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
         bleManagerEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral );
@@ -47,14 +48,14 @@ export default class BleService{
 
     /**
      * add all found peripheral in a list
+     * if the last connection is found it will connect to this
      */
     handleDiscoverPeripheral = (peripheral) => {
         if(!peripheral.name)return;
-        //console.log('Got ble peripheral', peripheral);
-        //console.log(peripheral);
-        //TODO check on scenn if the saved device is found.
-        if(this. != null && peripheral.name == this.){
-
+        if(this.loadedVal.name != null && peripheral.name == this.loadedVal.name){
+            console.log('previous connection found');
+            this.peripheral=peripheral;
+            this.connact();
         }
         this.deviceList[peripheral.name]=peripheral;
     }
@@ -97,6 +98,7 @@ export default class BleService{
             }).catch((error) => {
                 console.log(error);
             });
+            this.connected = true;
     }
 
     /**
@@ -174,6 +176,7 @@ export default class BleService{
 	 * send data to the device data is a byte array e.g. [0x00,0x01]
 	 */
     sendData=(data)=>{
+    //TODO check that the device provides a service
         console.log(this.peripheral.id);
         console.log(this.peripheral.advertising.serviceUUIDs[0]);
         console.log('2A57');

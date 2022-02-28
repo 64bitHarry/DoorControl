@@ -40,21 +40,6 @@ export default class App extends Component {
 		bleService.registerListener(this);//inform the app if a device is selected or a list is updated.
 	}//END constructor
 
-    createDeviceList = (peripheral) => {
-
-        //this.deviceList[(peripheral.name)]=(
-        //    <View key={peripheral.name} style={{ flex:1, justifyContent:'space-between',width:WIDTH*0.9}}>
-        //        <Text>{peripheral.name}</Text>
-        //    </View>
-        //);
-        //var list = [];
-        //    Object.keys(this.deviceList).forEach(value=>{
-        //        list.push(this.deviceList[value]);
-        //    });
-        //this.setState({renderList:list});
-    }//END handle
-
-
     /**
      * static method to render the scroll view elements
      *
@@ -81,40 +66,47 @@ export default class App extends Component {
 
 	notify=(event)=>{
 	    console.log(event);
-	    //TODO change to switch statemant
-	    if(event==constants.NOTIFY_EVENT){
-            this.setState({modalVisible:false});
-	    }else if(event==constants.CONNECTED){
-	        this.setState({connectionStatus:styles.ciclegrren});
-	    }else if(event==constants.CONNECTION_LOST){
-	        this.setState({connectionStatus:styles.ciclered});
-	    }else if(event==constants.DEVICEUPDATE){
-	        this.renderDeviceList();
-	        this.forceUpdate();
-	    }
+	    switch (event) {
+            case constants.NOTIFY_EVENT:
+                this.setState({modalVisible:false});
+                break;
+            case constants.CONNECTED:
+	            this.setState({connectionStatus:styles.ciclegrren});
+                break;
+            case constants.CONNECTION_LOST:
+	            this.setState({connectionStatus:styles.ciclered});
+                break;
+            case constants.DEVICEUPDATE:
+                this.renderDeviceList();
+	            this.forceUpdate();
+                break;
+        }
 	}
 
     /**
      * write the up comand to the ble
      */
     upStart=()=>{
-        bleService.sendData([0x01]);
+        if(bleService.connected)
+            bleService.sendData([0x01]);
     }
 
     /**
      * write the down comand to the ble
      */
 	downStart=()=>{
-	    bleService.sendData([0x02]);
-	    //console.log('start down');
+        if(bleService.connected)
+            bleService.sendData([0x02]);
+            //console.log('start down');
     }
 
     /**
      * send the 0x00 to stop the door
      */
     stop=()=>{
-        bleService.sendData([0x00]);
-        //console.log('stop down');
+        if(bleService.connected)
+            bleService.sendData([0x00]);
+            //console.log('stop down');
     }
 
     /**
