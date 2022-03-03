@@ -79,7 +79,7 @@ export default class BleService{
      */
     scan=()=>{
         this.deviceList = {};
-        BleManager.scan([], 1, true).then(() => {
+        BleManager.scan([], 5, true).then(() => {
             console.log("Scan started");
         });
     }

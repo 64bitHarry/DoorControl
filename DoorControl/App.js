@@ -10,7 +10,7 @@ import {Text, TextInput, View, Button, Alert, Image,
 	    Keyboard, Dimensions, ActivityIndicator,
 	    AsyncStorage, Platform, KeyboardAvoidingView,
 	    Modal, Pressable,
-	    ScrollView,
+	    ScrollView,PermissionsAndroid,
        } from 'react-native';
 import ListItem from './utils/ListItem';
 import constants from './utils/Constants';
@@ -36,9 +36,30 @@ export default class App extends Component {
 			renderList:[],
 			connectionStatus:styles.ciclered,
 		};
+		this.checkAndroidPermision();
 		bleService.registerListener(this);//inform the app if a device is selected or a list is updated.
 	}//END constructor
 
+    /**
+     *
+     */
+    checkAndroidPermision = () => {
+        if (Platform.OS === 'android' && Platform.Version >= 23) {
+            PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {
+                if (result) {
+                    console.log("Permission is OK");
+                } else {
+                    PermissionsAndroid.requestPermission(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((result) => {
+                        if (result) {
+                            Alert.alert("User accept");
+                        } else {
+                            Alert.alert("User refuse");
+                       }
+                    });
+                }
+            });
+        }
+    }
     /**
      * static method to render the scroll view elements
      *
@@ -57,7 +78,7 @@ export default class App extends Component {
 
 
     openSettings=()=>{
-        //console.log(bleService.deviceList)
+        console.log(bleService.deviceList)
         this.renderDeviceList()
         this.setState({modalVisible:true});
 	}
